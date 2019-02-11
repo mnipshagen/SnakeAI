@@ -7,6 +7,7 @@ class Human {
   float colourAlpha = 70.0;
   
   Brain brain;
+  String[] labels = {"fX", "fY", "tcL", "tcD", "tcR", "tcU"};
   float[] sensations = new float[6];
   float[] percepts = new float[4];
   int framesBetweenSenses;
