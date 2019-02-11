@@ -135,20 +135,25 @@ class Species {
   
   Human mate(ArrayList<GenotypeAxon> genotypeAxons) {
     Human offspring;
+    println("Species::mate(); at start");
     if ((random(1) < 0.25)) {
+      println("Species::mate()::selectParent().clone();");
       offspring = selectParent().clone();
     } else {
+      println("Species::mate()::Human P1");
       Human P1 = selectParent();
+      println("Species::mate()::Human P2");
       Human P2 = selectParent();
-      
+      println("Species::mate()::fitness");
       if (P2.fitness < P1.fitness) {
         offspring = P1.crossbreed(P2);
       } else {
         offspring = P2.crossbreed(P1);
       }
     }
-    
+    println("Species::mate()::neuroplasticity");
     offspring.brain.neuroplasticity(genotypeAxons);
+    println("Species::mate()::return");
     return offspring;
   }
   

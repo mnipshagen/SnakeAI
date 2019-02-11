@@ -83,65 +83,95 @@ class Brain {
   void neuroplasticity(ArrayList<GenotypeAxon> genotypeAxons) {
     // if there are no axons, grow a new one
     if (phenotypeAxons.size() == 0) {
+      println("Brain::neuroplasticity() -> growAxon()");
       growAxon(genotypeAxons);
     }
     
+    println("Brain::neuroplasticity() vor random");
     // mutate excitabilities 80% of the time
     float r = random(1);
     if (r < 0.8) {
+      println("Brain::neuroplasticity() in if");
       for (int i = 0; i < phenotypeAxons.size(); i++) {
+        println("Brain::neuroplasticity() in if::for() at i=", i);
         phenotypeAxons.get(i).mutate();
+        println("Brain::neuroplasticity() in if::for() at i=", i, " after phenotypeAxon::mutate()");
       }
     }
     
     // grow new axon terminal 8% of the time
     r = random(1);
     if (r < 0.08) {
+      println("Brain::neuroplasticity() vor growAxon();");
       growAxon(genotypeAxons);
+      println("Brain::neuroplasticity() nach growAxon();");
     }
     
     // grow new neuron 2% of the time
     r = random(1);
     if (r < 0.02) {
+      println("Brain::neuroplasticity() vor growNeuron();");
       growNeuron(genotypeAxons);
+      println("Brain::neuroplasticity() nach growNeuron();");
     }
   }
   
   void growNeuron(ArrayList<GenotypeAxon> genotypeAxons) {
+    println("Brain::growNeuron();");
     if (phenotypeAxons.size() == 0) {
+      println("Brain::growNeuron() -> growAxon()");
       growAxon(genotypeAxons);
+      println("Brain::growNeuron() -> growAxon() after");
       return;
     }
     
+    println("Brain::growNeuron() before axon");
     // disable random axon
-    int someAxon;
+    int someAxon = 0;
+    int killSwitch = 0;
     do {
+      if (killSwitch > (phenotypeAxons.size() * 5)) { // we implemented this as a hacky fix for endless loops in cases where there's two phenotypeAxons that are both connected to the bias node;; could be prettier...but...eh... 
+        println("Brain::growNeuron() do{}while() killswitch triggered.");
+        return;
+      }
+      println("Brain::growNeuron() in do{}while() w axon=", someAxon, "; phenotypeAxons.size()=", phenotypeAxons.size());
       someAxon = floor(random(phenotypeAxons.size()));
+      killSwitch++;
     } while ((phenotypeAxons.get(someAxon).presynapticNeuron == neurons.get(biasNeuron)) && (phenotypeAxons.size() != 1));
     phenotypeAxons.get(someAxon).expressed = false;
+    println("Brain::growNeuron() after do{}while()");
     
+    println("Brain::growNeuron() growing neuron");
     // insert new neuron
     int newNeuron = neurons.size();
     neurons.add(new Neuron(newNeuron, -1)); // we'll see the type in a minute
     
+    println("Brain::growNeuron() adding new axon");
     // add new axon from disabled neuron's presynapse to new neuron with excitability=1
     int genotype = getGenotype(genotypeAxons, phenotypeAxons.get(someAxon).presynapticNeuron, neurons.get(findNeuron(newNeuron)));
+    println("Brain::growNeuron() gotGenotype");
     phenotypeAxons.add(new Axon(phenotypeAxons.size(), phenotypeAxons.get(someAxon).presynapticNeuron, neurons.get(findNeuron(newNeuron)), genotype, 1.0));
     
+    println("Brain::growNeuron() new axon from new neuron");
     // add new axon from new neuron to disabled neuron's postsynapse w previous excitability
     genotype = getGenotype(genotypeAxons, neurons.get(findNeuron(newNeuron)), phenotypeAxons.get(someAxon).postsynapticNeuron);
+    println("Brain::growNeuron() got genotype2");
     phenotypeAxons.add(new Axon(phenotypeAxons.size(), neurons.get(findNeuron(newNeuron)), phenotypeAxons.get(someAxon).postsynapticNeuron, genotype, phenotypeAxons.get(someAxon).excitability));
     
     // set new neuron's layer = old presynapse layer + 1;
     neurons.get(findNeuron(newNeuron)).type = phenotypeAxons.get(someAxon).presynapticNeuron.type + 1;
     
+    println("Brain::growNeuron() connect to bias");
     // connect to bias neuron w excitability = 0
     genotype = getGenotype(genotypeAxons, neurons.get(biasNeuron), neurons.get(findNeuron(newNeuron)));
     phenotypeAxons.add(new Axon(phenotypeAxons.size(), neurons.get(biasNeuron), neurons.get(findNeuron(newNeuron)), genotype, 0.0));
     
+    println("Brain::growNeuron() adjust layer types?");
     // adjust types and such
     if (neurons.get(findNeuron(newNeuron)).type == phenotypeAxons.get(someAxon).postsynapticNeuron.type) {
+      println("Brain::growNeuron() adjust for()");
       for (int i = 0; i < (neurons.size() - 1); i++) {
+        println("Brain::growNeuron() adjust for() i=", i);
         if (neurons.get(i).type >= neurons.get(findNeuron(newNeuron)).type) {
           neurons.get(i).type++;
         }
@@ -149,6 +179,7 @@ class Brain {
       layers++;
     }
     
+    println("Brain::growNeuron() -> Brain::phenotypegenesis()");
     // update
     phenotypegenesis();
   }

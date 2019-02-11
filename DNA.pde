@@ -64,16 +64,20 @@ class DNA {
     // finally breed offspring
     float average = getAvgFitnessSum();
     ArrayList<Human> offspring = new ArrayList<Human>();
+    println("@breeding()::for() with species=", species.size());
     for (int i = 0; i < species.size(); i++) {
       offspring.add(species.get(i).bestHuman.clone());
       int offspringCount = floor(species.get(i).averageFitness / average * humans.size()) - 1;
+      println("@breeding()::for()::for() with i=", i, "; offspringCount=", offspringCount);
       for (int n = 0; n < offspringCount; n++) {
+        println("@breeding()::for()::for()::offspring.add() with n=", n);
         offspring.add(species.get(i).mate(genotypeAxons));
       }
     }
     
     // make sure to fill humans
     while (offspring.size() < humans.size()) {
+      println("@breeding()::while() with offspring=", offspring.size(), "; humans=", humans.size());
       offspring.add(species.get(0).mate(genotypeAxons));
     }
     
@@ -150,7 +154,7 @@ class DNA {
   }
   
   void killStaleSpecies() {
-    for (int i = 1; i < species.size(); i++) {
+    for (int i = 2; i < species.size(); i++) {
       if (species.get(i).staleEvolutions > 15) {
         species.remove(i);
         i--;
